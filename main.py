@@ -4,8 +4,13 @@ import pandas
 
 def run_indra_demo():
 	args = get_arguments()
-	pandas_df = pandas.read_csv(args["filename"])
+	filename = get_filename(args)
+	pandas_df = pandas.read_csv(filename)
 	print(pandas_df)
+
+
+def get_filename(args):
+	return args["filename"]
 
 
 def get_arguments():
