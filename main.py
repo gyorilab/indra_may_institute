@@ -6,7 +6,7 @@ def run_indra_demo():
 	args = get_arguments()
 	filename = get_filename(args)
 	pandas_df = pandas.read_csv(filename)
-	print(pandas_df)
+	return pandas_df
 
 
 def get_filename(args):
