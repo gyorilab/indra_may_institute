@@ -1,6 +1,7 @@
 import argparse
 import pandas
 import requests
+from protmapper import uniprot_client
 
 
 def run_indra_demo():
@@ -12,7 +13,8 @@ def run_indra_demo():
 def construct_df(filename):
 	pandas_df = pandas.read_csv(filename)
 	pandas_df[['sp', 'Protein', 'Gene']] = pandas_df['Protein'].str.split('|', expand=True)
-	pandas_df = pandas_df.loc[pandas_df['adj.pvalue'] < 0.04]
+	pandas_df = pandas_df.loc[pandas_df['adj.pvalue'] < 0.01]
+	pandas_df['HGNC'] = pandas_df['Protein'].apply(lambda protein_id: uniprot_client.get_hgnc_id(protein_id))
 	return pandas_df
 
 
@@ -30,9 +32,8 @@ def query_indra(filename):
 
 def create_groundings(df):
 	groundings = {}
-	protein_column = df['Protein']
-	for protein in protein_column:
-		groundings[protein] = 'UP', protein
+	for index, row in df.iterrows():
+		groundings[index] = 'HGNC', row['HGNC']
 	return groundings
 
 
