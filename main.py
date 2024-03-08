@@ -4,6 +4,8 @@ import requests
 from protmapper import uniprot_client
 import networkx as nx
 import plotly.graph_objects as go
+import random
+import math
 
 DATASET_NAME = "SMALL_MOLECULE_INTERVENTION"
 DATASET_VALUES = ["BREAST_CANCER", "SMALL_MOLECULE_INTERVENTION"]
@@ -43,10 +45,21 @@ def construct_networkx_graph(res):
                 type=entry['data']['stmt_type']
             )
 
-    # TODO: Set positions based on gene set clusters
-    Z = nx.random_geometric_graph(len(G.nodes), 0.125)
-    for index, node in enumerate(G.nodes):
-        nx.set_node_attributes(G, {node: Z.nodes[index]['pos']}, name='pos')
+    # Set positions based on edge betweenness clusters
+    comp = nx.community.girvan_newman(G)
+    communities = [sorted(c) for c in next(comp)]
+    circle_r = 1
+    big_r = 1
+    pi = math.pi
+    centers = [(math.cos(2 * pi / len(communities) * x) * big_r, math.sin(2 * pi / len(communities) * x) * big_r)
+               for x in range(0, len(communities))]
+    for index, nodes in enumerate(communities):
+        for node in nodes:
+            alpha = 2 * math.pi * random.random()
+            r = circle_r * math.sqrt(random.random())
+            x = r * math.cos(alpha) + centers[index][0]
+            y = r * math.sin(alpha) + centers[index][1]
+            nx.set_node_attributes(G, {node: [x, y]}, name='pos')
     return G
 
 
