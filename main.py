@@ -27,16 +27,21 @@ def construct_networkx_graph(res):
     output = res.json()
     G = nx.DiGraph()
     for entry in output:
-        # TODO: filter on statement type, or highest evidence count
-        G.add_node(entry['source_id'])
-        G.add_node(entry['target_id'])
-        G.add_edge(
-            entry['source_id'],
-            entry['target_id'],
-            evidence=entry['data']['evidence_count'],
-            belief=entry['data']['belief'],
-            type=entry['data']['stmt_type']
-        )
+        if entry['data']['stmt_type'] == 'Complex':
+            G.add_node(entry['source_id'])
+            G.add_node(entry['target_id'])
+            if G.has_edge(entry['target_id'], entry['source_id']):
+                if (entry['data']['evidence_count']
+                        <= G.get_edge_data(entry['target_id'], entry['source_id'])['evidence']):
+                    # Accounts for bidirectional edges for now
+                    continue
+            G.add_edge(
+                entry['source_id'],
+                entry['target_id'],
+                evidence=entry['data']['evidence_count'],
+                belief=entry['data']['belief'],
+                type=entry['data']['stmt_type']
+            )
 
     # TODO: Set positions based on gene set clusters
     Z = nx.random_geometric_graph(len(G.nodes), 0.125)
@@ -52,12 +57,10 @@ def create_plotly_graph(G):
         x0, y0 = G.nodes[edge[0]]['pos']
         x1, y1 = G.nodes[edge[1]]['pos']
 
-        # TODO: account for cyclic connections - append cyclic info
-        mnode_x.extend([(x0 + x1) / 2])  # assuming values positive/get midpoint
-        mnode_y.extend([(y0 + y1) / 2])  # assumes positive vals/get midpoint
+        mnode_x.extend([(x0 + x1) / 2])
+        mnode_y.extend([(y0 + y1) / 2])
         mnode_txt.extend([f'HGNC:{edge[0]}->HGNC:{edge[1]} evidence count: {G.edges[edge]['evidence']}'])
 
-        # TODO: Color bar for arrows based on evidence count?
         arrow = go.layout.Annotation(dict(
             x=x0,
             y=y0,
@@ -117,7 +120,7 @@ def create_plotly_graph(G):
     node_text = []
     for node, adjacencies in enumerate(G.adjacency()):
         node_adjacencies.append(len(adjacencies[1]))
-        node_text.append('# of connections: ' + str(len(adjacencies[1])))
+        node_text.append('# of connections into node: ' + str(len(adjacencies[1])))
 
     node_trace.marker.color = node_adjacencies
     node_trace.hovertext = node_text
