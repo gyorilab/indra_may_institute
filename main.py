@@ -24,9 +24,21 @@ def run_indra_demo():
 	print(res.json())
 
 
-def create_plotly_graph():
-	# output = res.json()
-	G = nx.random_geometric_graph(140, 0.125)
+def create_plotly_graph(res):
+	output = res.json()
+	G = nx.DiGraph()
+	for entry in output:
+		G.add_node(entry['source_id'])
+		G.add_node(entry['target_id'])
+		G.add_edge(entry['source_id'], entry['target_id'])
+
+	# Setting positions at random
+	Z = nx.random_geometric_graph(len(G.nodes), 0.125)
+	for index, node in enumerate(G.nodes):
+		nx.set_node_attributes(G, {node: Z.nodes[index]['pos']}, name='pos')
+
+	# Need to add position....
+
 	edge_x = []
 	edge_y = []
 	for edge in G.edges():
