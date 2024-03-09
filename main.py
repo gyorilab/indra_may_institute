@@ -2,6 +2,8 @@ import argparse
 import pandas
 import requests
 from protmapper import uniprot_client
+from indra.databases.hgnc_client import get_hgnc_name
+from gseapy import enrichr
 import networkx as nx
 import plotly.graph_objects as go
 import math
@@ -77,13 +79,20 @@ def construct_networkx_graph(res, k=30, iterations=100, initialize=0):
                 initial_pos[node] = [x, y]
 
     # Improve layout using spring layout algorithm
-    pos = nx.spring_layout(G, weight='evidence', k=k/math.sqrt(len(G.nodes)), pos=initial_pos, iterations=iterations)
+    pos = nx.spring_layout(G, weight='evidence', k=k / math.sqrt(len(G.nodes)), pos=initial_pos, iterations=iterations)
     for index, nodes in enumerate(communities):
+        # Do GSEA and fetch top 10 gene sets
+        gene_list = [get_hgnc_name(node) for node in nodes]
+        gene_sets = enrichr(gene_list=gene_list,
+                            gene_sets=['GO_Biological_Process_2023', 'GO_Cellular_Component_2023',
+                                       'GO_Molecular_Function_2023'],
+                            organism='Human').results['Term'][0]
         for node in nodes:
             x = pos[node][0]
             y = pos[node][1]
             nx.set_node_attributes(G, {node: [x, y]}, name='pos')
             nx.set_node_attributes(G, {node: index}, name='community')
+            nx.set_node_attributes(G, {node: gene_sets}, name='gsea')
     return G
 
 
@@ -156,13 +165,12 @@ def create_plotly_graph(G):
     node_colors = []
     node_text = []
     for node in G.nodes():
-        node_text.append(f'HGNC:{node}')
+        node_text.append(G.nodes[node]['gsea'])
         node_colors.append(G.nodes[node]['community'])
 
     node_trace.marker.color = node_colors
     node_trace.hovertext = node_text
 
-    go.layout.Font
     fig = go.Figure(data=[mnode_trace, node_trace],
                     layout=go.Layout(
                         title='<br>Network graph made with Python',

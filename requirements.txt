@@ -5,3 +5,4 @@ networkx == 3.2.1
 matplotlib == 3.8.3
 requests == 2.31.0
 plotly == 5.19.0
+gseapy == 1.1.2
