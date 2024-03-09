@@ -25,7 +25,7 @@ def run_indra_demo():
     print(res.json())
 
 
-def construct_networkx_graph(res):
+def construct_networkx_graph(res, k=30, iterations=100, initialize=0):
     output = res.json()
     G = nx.DiGraph()
     for entry in output:
@@ -47,22 +47,37 @@ def construct_networkx_graph(res):
 
     # Set initial positions based on community detection
     communities = nx.community.louvain_communities(G, weight='evidence')
-    circle_r = 1
-    big_r = 1
-    pi = math.pi
-    centers = [(math.cos(2 * pi / len(communities) * x) * big_r, math.sin(2 * pi / len(communities) * x) * big_r)
-               for x in range(0, len(communities))]
     initial_pos = {}
-    for index, nodes in enumerate(communities):
-        for node in nodes:
-            alpha = 2 * math.pi * random.random()
-            r = circle_r * math.sqrt(random.random())
-            x = r * math.cos(alpha) + centers[index][0]
-            y = r * math.sin(alpha) + centers[index][1]
-            initial_pos[node] = [x, y]
+    if initialize == 0:
+        circle_r = 1
+        big_r = 1
+        pi = math.pi
+        centers = [(math.cos(2 * pi / len(communities) * x) * big_r, math.sin(2 * pi / len(communities) * x) * big_r)
+                   for x in range(0, len(communities))]
+        for index, nodes in enumerate(communities):
+            for node in nodes:
+                alpha = 2 * math.pi * random.random()
+                r = circle_r * math.sqrt(random.random())
+                x = r * math.cos(alpha) + centers[index][0]
+                y = r * math.sin(alpha) + centers[index][1]
+                initial_pos[node] = [x, y]
+    else:
+        Z = nx.random_geometric_graph(G.number_of_nodes(), 0.125)
+        circle_r = 0.125
+        for index, node in enumerate(G.nodes):
+            nx.set_node_attributes(G, {node: Z.nodes[index]['pos']}, name='pos')
+        for index, nodes in enumerate(communities):
+            centroid_x = sum(nx.get_node_attributes(G, 'pos')[node][0] for node in nodes) / len(nodes)
+            centroid_y = sum(nx.get_node_attributes(G, 'pos')[node][1] for node in nodes) / len(nodes)
+            for node in nodes:
+                alpha = 2 * math.pi * random.random()
+                r = circle_r * math.sqrt(random.random())
+                x = r * math.cos(alpha) + centroid_x
+                y = r * math.sin(alpha) + centroid_y
+                initial_pos[node] = [x, y]
 
     # Improve layout using spring layout algorithm
-    pos = nx.spring_layout(G, weight='evidence', k=30/math.sqrt(len(G.nodes)), pos=initial_pos)
+    pos = nx.spring_layout(G, weight='evidence', k=k/math.sqrt(len(G.nodes)), pos=initial_pos, iterations=iterations)
     for index, nodes in enumerate(communities):
         for node in nodes:
             x = pos[node][0]
