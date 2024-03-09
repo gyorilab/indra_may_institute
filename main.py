@@ -4,8 +4,8 @@ import requests
 from protmapper import uniprot_client
 import networkx as nx
 import plotly.graph_objects as go
-import random
 import math
+import random
 
 DATASET_NAME = "SMALL_MOLECULE_INTERVENTION"
 DATASET_VALUES = ["BREAST_CANCER", "SMALL_MOLECULE_INTERVENTION"]
@@ -45,21 +45,30 @@ def construct_networkx_graph(res):
                 type=entry['data']['stmt_type']
             )
 
-    # Set positions based on edge betweenness clusters
-    comp = nx.community.girvan_newman(G)
-    communities = [sorted(c) for c in next(comp)]
+    # Set initial positions based on community detection
+    communities = nx.community.louvain_communities(G, weight='evidence')
     circle_r = 1
     big_r = 1
     pi = math.pi
     centers = [(math.cos(2 * pi / len(communities) * x) * big_r, math.sin(2 * pi / len(communities) * x) * big_r)
                for x in range(0, len(communities))]
+    initial_pos = {}
     for index, nodes in enumerate(communities):
         for node in nodes:
             alpha = 2 * math.pi * random.random()
             r = circle_r * math.sqrt(random.random())
             x = r * math.cos(alpha) + centers[index][0]
             y = r * math.sin(alpha) + centers[index][1]
+            initial_pos[node] = [x, y]
+
+    # Improve layout using spring layout algorithm
+    pos = nx.spring_layout(G, weight='evidence', k=30/math.sqrt(len(G.nodes)), pos=initial_pos)
+    for index, nodes in enumerate(communities):
+        for node in nodes:
+            x = pos[node][0]
+            y = pos[node][1]
             nx.set_node_attributes(G, {node: [x, y]}, name='pos')
+            nx.set_node_attributes(G, {node: index}, name='community')
     return G
 
 
@@ -84,7 +93,7 @@ def create_plotly_graph(G):
             ay=y1,
             arrowhead=3,
             arrowwidth=1.5,
-            arrowcolor='rgb(255,51,0)', )
+            arrowcolor='lightgreen')
         )
 
         arrow_list.append(arrow)
@@ -120,39 +129,40 @@ def create_plotly_graph(G):
             colorscale='YlGnBu',
             reversescale=True,
             color=[],
-            size=10,
+            size=30,
             colorbar=dict(
                 thickness=15,
-                title='Node Connections',
+                title='Cluster ID',
                 xanchor='left',
                 titleside='right'
             ),
             line_width=2))
 
-    node_adjacencies = []
+    node_colors = []
     node_text = []
-    for node, adjacencies in enumerate(G.adjacency()):
-        node_adjacencies.append(len(adjacencies[1]))
-        node_text.append('# of connections into node: ' + str(len(adjacencies[1])))
+    for node in G.nodes():
+        node_text.append(f'HGNC:{node}')
+        node_colors.append(G.nodes[node]['community'])
 
-    node_trace.marker.color = node_adjacencies
+    node_trace.marker.color = node_colors
     node_trace.hovertext = node_text
 
+    go.layout.Font
     fig = go.Figure(data=[mnode_trace, node_trace],
                     layout=go.Layout(
                         title='<br>Network graph made with Python',
                         font=dict(
                             family="Courier New, monospace",
-                            size=18,
-                            color="RebeccaPurple"
+                            size=10,
+                            color="Black"
                         ),
+                        annotations=arrow_list,
                         showlegend=False,
                         hovermode='closest',
                         margin=dict(b=20, l=5, r=5, t=40),
                         xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                     )
-    fig.update_layout(annotations=arrow_list)
     fig.show()
 
 
