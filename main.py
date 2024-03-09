@@ -118,7 +118,7 @@ def create_plotly_graph(G):
             ax=x1,
             ay=y1,
             arrowhead=3,
-            arrowwidth=1.5,
+            arrowwidth=min(5, G.edges[edge]['evidence']),
             arrowcolor='lightgreen')
         )
 
