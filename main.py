@@ -86,13 +86,15 @@ def construct_networkx_graph(res, k=30, iterations=100, initialize=0):
         gene_sets = enrichr(gene_list=gene_list,
                             gene_sets=['GO_Biological_Process_2023', 'GO_Cellular_Component_2023',
                                        'GO_Molecular_Function_2023'],
-                            organism='Human').results['Term'][0]
+                            organism='Human').results
+        top_gene_set = (f'{gene_sets['Term'][0]} w/ p-value '
+                        f'{str(gene_sets['Adjusted P-value'][0])}')
         for node in nodes:
             x = pos[node][0]
             y = pos[node][1]
             nx.set_node_attributes(G, {node: [x, y]}, name='pos')
             nx.set_node_attributes(G, {node: index}, name='community')
-            nx.set_node_attributes(G, {node: gene_sets}, name='gsea')
+            nx.set_node_attributes(G, {node: top_gene_set}, name='gsea')
     return G
 
 
