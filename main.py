@@ -81,7 +81,7 @@ def construct_networkx_graph(res, k=30, iterations=100, initialize=0):
     # Improve layout using spring layout algorithm
     pos = nx.spring_layout(G, weight='evidence', k=k / math.sqrt(len(G.nodes)), pos=initial_pos, iterations=iterations)
     for index, nodes in enumerate(communities):
-        # Do GSEA and fetch top 10 gene sets
+        # Do GSEA and fetch top gene set
         gene_list = [get_hgnc_name(node) for node in nodes]
         gene_sets = enrichr(gene_list=gene_list,
                             gene_sets=['GO_Biological_Process_2023', 'GO_Cellular_Component_2023',
