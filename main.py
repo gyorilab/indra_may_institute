@@ -24,7 +24,8 @@ def run_indra_demo():
     args = get_arguments()
     filename = get_filename(args)
     res = query_indra(filename)
-    print(res.json())
+    G = construct_networkx_graph(res)
+    create_plotly_graph(G)
 
 
 def construct_networkx_graph(res, k=30, iterations=100, initialize=0):

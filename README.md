@@ -10,5 +10,6 @@ curl https://sh.rustup.rs -sSf | sh -s -- -y
 export PATH="$PATH:$HOME/.cargo/bin"
 # pip install
 pip install -r requirements.txt
-
+ipython kernel install --user --name=venv
 ```
+
