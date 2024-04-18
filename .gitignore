@@ -161,3 +161,8 @@ cython_debug/
 .DS_Store
 *.csv
 *.pkl
+*.pdf
+*.cx
+*.dot
+*.json
+*.sbgn

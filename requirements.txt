@@ -9,3 +9,4 @@ protmapper == 0.0.29
 ipython == 8.22.2
 ipykernel == 6.29.3
 nbformat == 5.10.3
+famplex == 0.0.4
