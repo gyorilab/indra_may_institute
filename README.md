@@ -1,22 +1,4 @@
 # IndraDemo
 
-## Initialization Steps
-```
-# set up virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-# pip install
-pip install -r requirements.txt
-# install pygraphviz instructions - [reference](https://pygraphviz.github.io/documentation/stable/install.html)
-## MacOS
-brew install pygraphviz
-export GRAPHVIZ_DIR="$(brew --prefix graphviz)"
-pip install pygraphviz \
-    --config-settings=--global-option=build_ext \
-    --config-settings=--global-option="-I$GRAPHVIZ_DIR/include" \
-    --config-settings=--global-option="-L$GRAPHVIZ_DIR/lib"
-# install venv into jupyter notebook
-ipython kernel install --user --name=venv
-See step 4 in https://www.geeksforgeeks.org/using-jupyter-notebook-in-virtual-environment/
-```
+This Python notebook serves as an example of how users can use their own datasets and integrate them with INDRA to provide meaningful interpretation. We start with bringing our own MSstats dataset that consists of a list of proteins alongside their p-values, logFCs, and abundances. We use p-values, logFCs, and correlations between proteins to filter which genes we query INDRA with.
 
