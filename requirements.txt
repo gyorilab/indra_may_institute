@@ -8,3 +8,4 @@ nbformat == 5.9.2
 git+https://github.com/sorgerlab/indra.git # in favor of release indra == 1.22.0
 gilda == 1.1.0
 bioregistry == 0.11.1
+git+https://github.com/gyorilab/pybiopax.git
