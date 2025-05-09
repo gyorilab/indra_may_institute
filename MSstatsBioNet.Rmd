@@ -12,8 +12,10 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("MSstats")
 # The following initializes usage of Bioc devel
 # BiocManager::install(version='devel')
-BiocManager::install("MSstatsBioNet")
-# devtools::install_github("Vitek-Lab/MSstatsBioNet", build_vignettes = TRUE)
+# BiocManager::install("MSstatsBioNet")
+install.packages('devtools')
+BiocManager::install('BiocStyle')
+devtools::install_github("Vitek-Lab/MSstatsBioNet", build_vignettes = TRUE)
 ```
 
 ## Load Packages
@@ -26,7 +28,7 @@ library(MSstats)
 
 ## Part 1: Subnetwork Search & Cutoffs
 
-The first intuition with querying a network from INDRA is to filter your proteins by adjusted pvalue.  We demonstrate this with the `Talus-2024` dataset.  The `Talus-2024` dataset is a proteomics dataset that was used to study the effects of the drug DbET6 on the protein levels in the human cell line THP-1.  The study measured chromatin-bound proteins only, and cells were exposed to the drug for 4 hours.  Similarly, other drugs were used too, including CHEK1 inhibitor PF477736 and ATR inhibitor VE-821.
+The first intuition with querying a network from INDRA is to filter your proteins by adjusted pvalue. We demonstrate this with the `Talus-2024` dataset. The `Talus-2024` dataset is a proteomics dataset that was used to study the effects of the drug DbET6 on the protein levels in the human cell line THP-1. The study measured chromatin-bound proteins only, and cells were exposed to the drug for 4 hours. Similarly, other drugs were used too, including CHEK1 inhibitor PF477736 and ATR inhibitor VE-821.
 
 ### Volcano Plot: DbET6
 
@@ -40,7 +42,7 @@ dbet6$Label = "DbET6-DMSO"
 groupComparisonPlots(dbet6, "VolcanoPlot", address = FALSE)
 ```
 
-Upon initial glance, we can see there are some differentially abundant proteins, including the main targets BRD2, BRD3, and BRD4.  This is expected since DbET6 is a protein degrader, so we expect to see a decrease in protein abundance overall.
+Upon initial glance, we can see there are some differentially abundant proteins, including the main targets BRD2, BRD3, and BRD4. This is expected since DbET6 is a protein degrader, so we expect to see a decrease in protein abundance overall.
 
 ### Volcano Plot: ATR and CHEK1 inhibitors
 
@@ -56,11 +58,11 @@ atr$Label = "VE-821-DMSO"
 groupComparisonPlots(atr, "VolcanoPlot", address = FALSE)
 ```
 
-Unlike DbET6, we see almost zero differentially abundant proteins for the CHEK1 and ATR inhibitors.  This is likely due to those drugs only affecting phosphorylation, so even the main targets are not differentially abundant.  
+Unlike DbET6, we see almost zero differentially abundant proteins for the CHEK1 and ATR inhibitors. This is likely due to those drugs only affecting phosphorylation, so even the main targets are not differentially abundant.
 
 ### Subnetwork Search with Cutoffs - DbET6-DMSO
 
-We will first start with the DbET6-DMSO comparison. Intuitively, our first thought is that degrading the bromodomain proteins should trigger transcriptional regulation, meaning some transcription factors should start increasing in abundance.  We will use the `getSubnetworkFromIndra` function to query the INDRA database with the proteins that are differentially abundant.  We will also use the `annotateProteinInfoFromIndra` function to annotate the proteins with their gene names and other information.  `visualizeNetworks` will be used to visualize the network on Cytoscape.  
+We will first start with the DbET6-DMSO comparison. Intuitively, our first thought is that degrading the bromodomain proteins should trigger transcriptional regulation, meaning some transcription factors should start increasing in abundance. We will use the `getSubnetworkFromIndra` function to query the INDRA database with the proteins that are differentially abundant. We will also use the `annotateProteinInfoFromIndra` function to annotate the proteins with their gene names and other information. `visualizeNetworks` will be used to visualize the network on Cytoscape.
 
 ```{r}
 dbet6_annotated = annotateProteinInfoFromIndra(dbet6, "Uniprot_Mnemonic")
@@ -79,10 +81,8 @@ head(subnetwork_dbet6_1$nodes)
 head(subnetwork_dbet6_1$edges)
 ```
 
-As seen here, we get zero edges in the network. There are multiple paths forward here:
-- Increase the pvalue cutoff of 0.05.  
-- Decrease the evidence count cutoff.
-- Increase the statement types to include more than just IncreaseAmount/DecreaseAmount.  For example, we can include Activation, Phosphorylation, and Inhibition.
+As seen here, we get zero edges in the network. There are multiple paths forward here: - Increase the pvalue cutoff of 0.05.\
+- Decrease the evidence count cutoff. - Increase the statement types to include more than just IncreaseAmount/DecreaseAmount. For example, we can include Activation, Phosphorylation, and Inhibition.
 
 ```{r}
 subnetwork_dbet6_2 = getSubnetworkFromIndra(
@@ -94,10 +94,10 @@ subnetwork_dbet6_2 = getSubnetworkFromIndra(
 head(subnetwork_dbet6_2$nodes)
 head(subnetwork_dbet6_2$edges)
 ```
-Recall THP-1 is a suspension cell line isolated from peripheral blood of an acute monocytic leukemia patient.  The NOP2 to BRD4 connection is particularly interesting because it is in the context of leukemia. When reading one of the [papers](https://pmc.ncbi.nlm.nih.gov/articles/PMC7490858/), NOP2 appears to form a complex with BRD4 to protect the chromatin from certain external influences, e.g. drug perturbations.  So what next can be uncovered on top of this?
 
-We again query the INDRA database with the same parameters, but this time we decrease the evidence count cutoff to 2.  This should help us add more information into the network.
+Recall THP-1 is a suspension cell line isolated from peripheral blood of an acute monocytic leukemia patient. The NOP2 to BRD4 connection is particularly interesting because it is in the context of leukemia. When reading one of the [papers](https://pmc.ncbi.nlm.nih.gov/articles/PMC7490858/), NOP2 appears to form a complex with BRD4 to protect the chromatin from certain external influences, e.g. drug perturbations. So what next can be uncovered on top of this?
 
+We again query the INDRA database with the same parameters, but this time we decrease the evidence count cutoff to 2. This should help us add more information into the network.
 
 ```{r}
 subnetwork_dbet6_3 = getSubnetworkFromIndra(
@@ -117,11 +117,11 @@ visualizeNetworks(
 )
 ```
 
-Here, we see that the network becomes expanded, with many more edges to investigate.  But note that the 1-evidence edges appear very noisy.  There is an interesting edge between NOP2 and GTPBP4, where the two proteins are associated with each other in the context of sepsis.  
+Here, we see that the network becomes expanded, with many more edges to investigate. But note that the 1-evidence edges appear very noisy. There is an interesting edge between NOP2 and GTPBP4, where the two proteins are associated with each other in the context of sepsis.
 
-There are also other subnetworks detached from the main targets.  While those could be investigated, it's unclear if they are relevant to the main targets (they could be off target effects, but off target effects are harder to evaluate given a follow up experiment would definitely need to confirm that)
+There are also other subnetworks detached from the main targets. While those could be investigated, it's unclear if they are relevant to the main targets (they could be off target effects, but off target effects are harder to evaluate given a follow up experiment would definitely need to confirm that)
 
-Eventually, we come to the point where we might need to consider relaxing our pvalue filter.  
+Eventually, we come to the point where we might need to consider relaxing our pvalue filter.
 
 ```{r}
 subnetwork_dbet6_4 = getSubnetworkFromIndra(
@@ -141,7 +141,7 @@ visualizeNetworks(
 )
 ```
 
-We again see the network expand, but there's a lot of unpack.  We can narrow things down by increasing the evidence count filter. 
+We again see the network expand, but there's a lot of unpack. We can narrow things down by increasing the evidence count filter.
 
 ```{r}
 subnetwork_dbet6_5 = getSubnetworkFromIndra(
@@ -161,15 +161,16 @@ visualizeNetworks(
 )
 ```
 
-The NOP2 to NIP7 connection is particularly interesting.  This complex is involved in creating new ribosomes in the nucleolus.  All of a sudden, we can start forming a hypothesis of what may be going on, perhaps is the lack of bromodomain proteins triggering the cell to create more ribosomes for protein synthesis?  This is a very interesting hypothesis, and one that could be tested in the future.  
+The NOP2 to NIP7 connection is particularly interesting. This complex is involved in creating new ribosomes in the nucleolus. All of a sudden, we can start forming a hypothesis of what may be going on, perhaps is the lack of bromodomain proteins triggering the cell to create more ribosomes for protein synthesis? This is a very interesting hypothesis, and one that could be tested in the future.
 
-Looking into the NOL8 to NIP7 connection, we see another protein complex connection that is involved in robosome biogenesis.  All of a sudden, our hypothesis is starting to form around the ribosome biogenesis pathway.  
+Looking into the NOL8 to NIP7 connection, we see another protein complex connection that is involved in robosome biogenesis. All of a sudden, our hypothesis is starting to form around the ribosome biogenesis pathway.
 
-As you can see, which a sufficient number of differentially abundant proteins, we can start to untangle the network and form a hypothesis via a series of tweaking various cutoffs.  
+As you can see, which a sufficient number of differentially abundant proteins, we can start to untangle the network and form a hypothesis via a series of tweaking various cutoffs.
 
 ### Subnetwork Search with Cutoffs - PF477736-DMSO
 
-Here, we cannot necessarily use the `getSubnetworkFromIndra` pvalue cutoff since the main target, CHEK1, is not differentially abundant (likely due to the drug only affecting signaling activity).  We adjust our filtering of the chek1 dataset to include CHEK1 and all differentially abundant proteins.
+Here, we cannot necessarily use the `getSubnetworkFromIndra` pvalue cutoff since the main target, CHEK1, is not differentially abundant (likely due to the drug only affecting signaling activity). We adjust our filtering of the chek1 dataset to include CHEK1 and all differentially abundant proteins.
+
 ```{r}
 chek1_annotated = annotateProteinInfoFromIndra(chek1, "Uniprot_Mnemonic")
 chek1_annotated_5fpr = chek1_annotated %>% filter(HgncName == "CHEK1" | adj.pvalue < 0.05)
@@ -188,8 +189,7 @@ visualizeNetworks(
 )
 ```
 
-Despite lowering our evidence filter significantly to 1 and having many statement types, there appears to be almost no relationships.  But do pay attention to the CHEK1 to RPA1 relationship, because that one is particularly noteworthy.  Specifically, CHEK1 phosphorylation appears to be required to remove RPA1 from binding to ssDNA, which could explain why RPA1 is up-regulated after CHEK1 is inhibited.  So although CHEK1 did not change in protein abundance, its lack of phosphorylation activity could cause RPA1 to more likely to stay bound to ssDNA in the context of DNA repair.  
-
+Despite lowering our evidence filter significantly to 1 and having many statement types, there appears to be almost no relationships. But do pay attention to the CHEK1 to RPA1 relationship, because that one is particularly noteworthy. Specifically, CHEK1 phosphorylation appears to be required to remove RPA1 from binding to ssDNA, which could explain why RPA1 is up-regulated after CHEK1 is inhibited. So although CHEK1 did not change in protein abundance, its lack of phosphorylation activity could cause RPA1 to more likely to stay bound to ssDNA in the context of DNA repair.
 
 ```{r}
 chek1_annotated = annotateProteinInfoFromIndra(chek1, "Uniprot_Mnemonic")
@@ -209,15 +209,15 @@ visualizeNetworks(
 )
 ```
 
-The graph does not change.  As seen, with less differentially abundant proteins, it becomes increasingly challenging to balance between being too liberal with filters but also not missing out on anything interesting.  We won't even try with the ATR inhibitor because no proteins were differentially abundant with an adj.pvalue < 0.1.  
+The graph does not change. As seen, with less differentially abundant proteins, it becomes increasingly challenging to balance between being too liberal with filters but also not missing out on anything interesting. We won't even try with the ATR inhibitor because no proteins were differentially abundant with an adj.pvalue \< 0.1.
 
 ## Part 2: Pathway Edge Ranking
 
-Rather than using the `getSubnetworkFromIndra` function to query the INDRA database, we can also use the `getPathwaysFromIndra` function to get a list of edges originating from a main target.  But most importantly, this function also incorporates a scoring function that enables users to rank which edges to prioritize investigating first.  This is particularly useful for perturbation studies when a main target is known ahead of time or even disease studies where the main driver of a disease is well characterized.  
+Rather than using the `getSubnetworkFromIndra` function to query the INDRA database, we can also use the `getPathwaysFromIndra` function to get a list of edges originating from a main target. But most importantly, this function also incorporates a scoring function that enables users to rank which edges to prioritize investigating first. This is particularly useful for perturbation studies when a main target is known ahead of time or even disease studies where the main driver of a disease is well characterized.
 
 ### CHEK1 inhibitor: Ranked Edges
 
-Here, we start with the CHEK1 inhibitor.  We know the main target is CHEK1.  And then we attempt to rank all of the edges of CHEK1 based on our data and the INDRA evidence.  Proteins are characterized by how extreme their logFC is (modeled as a normal distribution), and edges are characterized by how extreme their evidence count is (modeled as the power law).  The idea is that the more extreme, the lower the score (ranging from 0 to 1). 
+Here, we start with the CHEK1 inhibitor. We know the main target is CHEK1. And then we attempt to rank all of the edges of CHEK1 based on our data and the INDRA evidence. Proteins are characterized by how extreme their logFC is (modeled as a normal distribution), and edges are characterized by how extreme their evidence count is (modeled as the power law). The idea is that the more extreme, the lower the score (ranging from 0 to 1).
 
 ```{r}
 chek1_annotated = annotateProteinInfoFromIndra(chek1, "Uniprot_Mnemonic")
@@ -225,7 +225,7 @@ chek1_annotated_no_issue = chek1_annotated %>% filter(is.na(issue))
 edges_chek1 = getPathwaysFromIndra(chek1_annotated_no_issue, main_target = "CHK1_HUMAN")
 ```
 
-We get some interesting insights from this edge ranking.  Notably, RPA1 returns as a top choice again.  But we see RAD51 and RPA2 are highly ranked.  When reading into the literature, it appears all of these proteins are involved in DNA damage repair.  Specifically, RPA1 and RPA2 are involved in ssDNA binding, while RAD51 is involved in homologous recombination. 
+We get some interesting insights from this edge ranking. Notably, RPA1 returns as a top choice again. But we see RAD51 and RPA2 are highly ranked. When reading into the literature, it appears all of these proteins are involved in DNA damage repair. Specifically, RPA1 and RPA2 are involved in ssDNA binding, while RAD51 is involved in homologous recombination.
 
 ### ATR inhibitor: Ranked Edges
 
@@ -235,11 +235,11 @@ atr_annotated_no_issue = atr_annotated %>% filter(is.na(issue))
 edges_atr = getPathwaysFromIndra(atr_annotated_no_issue, main_target = "ATR_HUMAN")
 ```
 
-The top 3 proteins ranked here are all involved in DNA damage repair as well.  Also notice how there's an overlap between the CHEK1 and ATR inhibitors.  This is expected since CHEK1 and ATR are both involved in DNA damage repair, so it makes sense that they would have similar downstream effects, notably on RAD51.  If querying INDRA DB directly, you will also see that RPA1 and RPA2 are connected to ATR, and ATR can phosphorylate CHEK1.  
+The top 3 proteins ranked here are all involved in DNA damage repair as well. Also notice how there's an overlap between the CHEK1 and ATR inhibitors. This is expected since CHEK1 and ATR are both involved in DNA damage repair, so it makes sense that they would have similar downstream effects, notably on RAD51. If querying INDRA DB directly, you will also see that RPA1 and RPA2 are connected to ATR, and ATR can phosphorylate CHEK1.
 
 ### Etoposide Connections
 
-Etoposide is a drug that is involved in DNA damage. In a new dataset that also assessed the effect of drugs on the THP1 cell line, there were interestingly a few overlapping proteins again.  
+Etoposide is a drug that is involved in DNA damage. In a new dataset that also assessed the effect of drugs on the THP1 cell line, there were interestingly a few overlapping proteins again.
 
 ```{r}
 input_2025 = data.table::fread("Talus-2025/model.csv")
@@ -247,11 +247,11 @@ etopo = input_2025 %>% filter(Label == "Etopo-DMSO") %>% filter(is.na(issue))
 groupComparisonPlots(etopo, "VolcanoPlot", address = FALSE)
 ```
 
-Interesting, RFA1_HUMAN (RPA1) and RFA2_HUMAN (RPA2) are both present and differentially abundant here again.  This seems to align with the previous experiment where CHEK1 and ATR inhibitors were used.  This is expected since Etoposide is a topoisomerase inhibitor, which causes DNA damage.  So it makes sense that the downstream effects would be similar to the CHEK1 and ATR inhibitors.
+Interesting, RFA1_HUMAN (RPA1) and RFA2_HUMAN (RPA2) are both present and differentially abundant here again. This seems to align with the previous experiment where CHEK1 and ATR inhibitors were used. This is expected since Etoposide is a topoisomerase inhibitor, which causes DNA damage. So it makes sense that the downstream effects would be similar to the CHEK1 and ATR inhibitors.
 
 ```{r}
 etopo_annotated = annotateProteinInfoFromIndra(etopo, "Uniprot_Mnemonic")
 edges_etopo = getPathwaysFromIndra(etopo_annotated, main_target = "etoposide", target_type = "Drug")
 ```
 
-You can see that RPA2 appears as a top 5 protein to investigate.  However, RPA1 doesn't appear in the list at all because INDRA has no evidence.  But based on all of our collected data, we can conclude that RPA1 is very likely involved in the DNA damage pathway with Etoposide.  
+You can see that RPA2 appears as a top 5 protein to investigate. However, RPA1 doesn't appear in the list at all because INDRA has no evidence. But based on all of our collected data, we can conclude that RPA1 is very likely involved in the DNA damage pathway with Etoposide.

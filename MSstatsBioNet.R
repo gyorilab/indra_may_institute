@@ -1,13 +1,13 @@
 install.packages("tidyverse")
-install.packages("igraph")
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("MSstats")
 # The following initializes usage of Bioc devel
 # BiocManager::install(version='devel')
-BiocManager::install("MSstatsBioNet")
-# devtools::install_github("Vitek-Lab/MSstatsBioNet", build_vignettes = TRUE)
-
+# BiocManager::install("MSstatsBioNet")
+install.packages('devtools')
+BiocManager::install('BiocStyle')
+devtools::install_github("Vitek-Lab/MSstatsBioNet", build_vignettes = TRUE)
 library(tidyverse)
 library(MSstatsBioNet)
 library(MSstats)
